@@ -1,22 +1,18 @@
 /*******************************
- *  FULL-AI MEME GENERATOR v1  *
- *  — token read from env —   *
+ *  FULL-AI MEME GENERATOR v2  *
+ *  — secure proxy edition —   *
  *******************************/
 
-/* 1 — Grab token from Vite / Netlify env */
-const HF_TOKEN  = import.meta.env.VITE_HF_TOKEN;
-const HF_MODEL  = "runwayml/stable-diffusion-v1-5";
-const TIMEOUT   = 60_000;
-
-/* 2 — DOM shortcuts */
+/* 1 — DOM shortcuts */
 const memeOutput = document.getElementById("memeOutput");
 const memePrompt = document.getElementById("memePrompt");
 
-/* 3 — Main entry */
+/* 2 — Main entry */
 export async function generateMeme() {
   const topic = memePrompt.value.trim();
   if (!topic) return alert("Type a meme topic first!");
 
+  // Quick pseudo-AI caption
   const captions = [
     `When ${topic}, but your brain says nope.`,
     `Me after ${topic}`,
@@ -27,18 +23,22 @@ export async function generateMeme() {
   ];
   const caption = captions[Math.floor(Math.random() * captions.length)];
 
+  // Loading UI
   memeOutput.innerHTML =
     '<p class="text-white text-xl font-mono animate-pulse">🧠 Drawing meme with AI…</p>';
 
   try {
+    /* 3 — Ask Netlify Function → Hugging Face for an image */
     const imgURL = await generateAIImage(
       `Internet meme, white bold Impact font at top, blank space for text, situation: "${topic}", humorous`
     );
-    console.log("✅ AI Image URL received:", imgURL);
+    console.log("✅ AI image received:", imgURL);
 
+    /* 4 — Overlay caption */
     const finalURL = await drawCaptionOnImage(imgURL, caption);
-    console.log("🖼 Drawing text over image");
+    console.log("🖼 Caption drawn");
 
+    /* 5 — Show + download */
     showResult(finalURL);
   } catch (err) {
     console.error(err);
@@ -47,35 +47,26 @@ export async function generateMeme() {
   }
 }
 
-/* ---------- Hugging Face call ---------- */
+/* ---------- Call Netlify Function (secure proxy) ---------- */
 async function generateAIImage(prompt) {
-  const controller = new AbortController();
-  const timeoutId  = setTimeout(() => controller.abort(), TIMEOUT);
-
-  const res = await fetch(
-    `https://api-inference.huggingface.co/models/${HF_MODEL}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${HF_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ inputs: prompt }),
-      signal: controller.signal,
-    }
-  );
-  clearTimeout(timeoutId);
+  const res = await fetch("/.netlify/functions/hf-proxy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt }),
+  });
 
   if (!res.ok) {
-    throw new Error(`HF error: ${res.status} ${await res.text()}`);
+    const txt = await res.text();
+    throw new Error(`Proxy error ${res.status}: ${txt}`);
   }
+
   const blob = await res.blob();
   return URL.createObjectURL(blob);
 }
 
 /* ---------- Caption overlay ---------- */
 async function drawCaptionOnImage(imgURL, caption) {
-  const img   = await loadImage(imgURL);
+  const img    = await loadImage(imgURL);
   const canvas = document.createElement("canvas");
   const ctx    = canvas.getContext("2d");
 
@@ -102,13 +93,11 @@ async function drawCaptionOnImage(imgURL, caption) {
 function loadImage(src) {
   return new Promise((res, rej) => {
     const img = new Image();
-    // img.crossOrigin = "anonymous";  ❌ Comment this out
-    img.onload = () => res(img);
+    img.onload  = () => res(img);
     img.onerror = rej;
-    img.src = src;
+    img.src     = src;
   });
 }
-
 
 /* ---------- Helpers ---------- */
 function wrapLines(ctx, text, maxW) {
@@ -126,9 +115,8 @@ function wrapLines(ctx, text, maxW) {
   return lines;
 }
 
-/* ---------- NEW: show result ---------- */
 function showResult(url) {
-  console.log("📸 Showing final image");          // <-- debug line
+  console.log("📸 Showing final image");
   memeOutput.innerHTML = "";
 
   const img = document.createElement("img");
