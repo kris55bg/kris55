@@ -102,12 +102,13 @@ async function drawCaptionOnImage(imgURL, caption) {
 function loadImage(src) {
   return new Promise((res, rej) => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload  = () => res(img);
+    // img.crossOrigin = "anonymous";  ❌ Comment this out
+    img.onload = () => res(img);
     img.onerror = rej;
-    img.src     = src;
+    img.src = src;
   });
 }
+
 
 /* ---------- Helpers ---------- */
 function wrapLines(ctx, text, maxW) {
