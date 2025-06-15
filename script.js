@@ -4,9 +4,9 @@
  *******************************/
 
 /* 1 — Grab token from Vite / Netlify env */
-const HF_TOKEN = import.meta.env.VITE_HF_TOKEN;      // <-- no secret in code!
-const HF_MODEL = "runwayml/stable-diffusion-v1-5";
-const GENERATION_TIMEOUT = 60_000; // 60 s safety
+const HF_TOKEN  = import.meta.env.VITE_HF_TOKEN;
+const HF_MODEL  = "runwayml/stable-diffusion-v1-5";
+const TIMEOUT   = 60_000;
 
 /* 2 — DOM shortcuts */
 const memeOutput = document.getElementById("memeOutput");
@@ -17,7 +17,6 @@ export async function generateMeme() {
   const topic = memePrompt.value.trim();
   if (!topic) return alert("Type a meme topic first!");
 
-  // Quick pseudo-AI caption
   const captions = [
     `When ${topic}, but your brain says nope.`,
     `Me after ${topic}`,
@@ -28,20 +27,18 @@ export async function generateMeme() {
   ];
   const caption = captions[Math.floor(Math.random() * captions.length)];
 
-  // Loading UI
   memeOutput.innerHTML =
     '<p class="text-white text-xl font-mono animate-pulse">🧠 Drawing meme with AI…</p>';
 
   try {
-    /* 4 — Generate background with Hugging Face */
     const imgURL = await generateAIImage(
       `Internet meme, white bold Impact font at top, blank space for text, situation: "${topic}", humorous`
     );
+    console.log("✅ AI Image URL received:", imgURL);
 
-    /* 5 — Overlay caption */
     const finalURL = await drawCaptionOnImage(imgURL, caption);
+    console.log("🖼 Drawing text over image");
 
-    /* 6 — Show + download */
     showResult(finalURL);
   } catch (err) {
     console.error(err);
@@ -53,7 +50,7 @@ export async function generateMeme() {
 /* ---------- Hugging Face call ---------- */
 async function generateAIImage(prompt) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), GENERATION_TIMEOUT);
+  const timeoutId  = setTimeout(() => controller.abort(), TIMEOUT);
 
   const res = await fetch(
     `https://api-inference.huggingface.co/models/${HF_MODEL}`,
@@ -78,19 +75,19 @@ async function generateAIImage(prompt) {
 
 /* ---------- Caption overlay ---------- */
 async function drawCaptionOnImage(imgURL, caption) {
-  const img = await loadImage(imgURL);
+  const img   = await loadImage(imgURL);
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx    = canvas.getContext("2d");
 
-  canvas.width = img.width;
+  canvas.width  = img.width;
   canvas.height = img.height;
   ctx.drawImage(img, 0, 0);
 
-  ctx.font = "bold 48px Impact";
-  ctx.fillStyle = "white";
+  ctx.font        = "bold 48px Impact";
+  ctx.fillStyle   = "white";
   ctx.strokeStyle = "black";
-  ctx.lineWidth = 4;
-  ctx.textAlign = "center";
+  ctx.lineWidth   = 4;
+  ctx.textAlign   = "center";
 
   const lines = wrapLines(ctx, caption, canvas.width - 60);
   let y = 80;
@@ -106,9 +103,9 @@ function loadImage(src) {
   return new Promise((res, rej) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.onload = () => res(img);
+    img.onload  = () => res(img);
     img.onerror = rej;
-    img.src = src;
+    img.src     = src;
   });
 }
 
@@ -128,8 +125,11 @@ function wrapLines(ctx, text, maxW) {
   return lines;
 }
 
+/* ---------- NEW: show result ---------- */
 function showResult(url) {
+  console.log("📸 Showing final image");          // <-- debug line
   memeOutput.innerHTML = "";
+
   const img = document.createElement("img");
   img.src = url;
   img.className = "rounded-lg shadow-lg";
