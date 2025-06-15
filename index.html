@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Meme Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center p-6">
+  <h1 class="text-4xl font-bold mb-4">AI Meme Generator</h1>
+
+  <input id="memePrompt" class="w-full max-w-md text-black p-2 rounded mb-4" placeholder="Enter a funny situation..." />
+
+  <button onclick="generateMeme()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+    Generate Meme
+  </button>
+
+  <div id="memeOutput" class="mt-8 max-w-md w-full flex flex-col items-center gap-4"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
