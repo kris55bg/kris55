@@ -9,6 +9,7 @@ const memePrompt = document.getElementById("memePrompt");
 
 /* 2 — Main entry */
 export async function generateMeme() {
+  console.log("🚀 generateMeme started");
   const topic = memePrompt.value.trim();
   if (!topic) return alert("Type a meme topic first!");
 
