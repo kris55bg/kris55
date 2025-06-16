@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kris Media Player</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+          crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen font-sans">
+  <h1 class="text-3xl font-bold mb-6 mt-4 flex items-center">
+    <span class="mr-2">🎵</span> Kris Media Player
+  </h1>
+
+  <div class="flex space-x-4 mb-6">
+    <input type="file" id="fileInput" accept="audio/*,video/*" class="hidden" />
+    <button onclick="document.getElementById('fileInput').click()" class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">Open File</button>
+    <button onclick="playMedia()" class="bg-green-600 px-4 py-2 rounded hover:bg-green-700">Play</button>
+    <button onclick="pauseMedia()" class="bg-yellow-600 px-4 py-2 rounded hover:bg-yellow-700">Pause</button>
+    <button onclick="stopMedia()" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700">Stop</button>
+  </div>
+
+  <video id="mediaPlayer" controls class="w-3/4 max-w-4xl rounded shadow-lg hidden mb-4"></video>
+  <p class="text-sm text-gray-400">Ad space</p>
+</body>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const mediaPlayer = document.getElementById('mediaPlayer');
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      mediaPlayer.src = url;
+      mediaPlayer.classList.remove('hidden');
+      mediaPlayer.load();
+    }
+  });
+
+  function playMedia() {
+    if (mediaPlayer.src) mediaPlayer.play();
+  }
+
+  function pauseMedia() {
+    if (!mediaPlayer.paused) mediaPlayer.pause();
+  }
+
+  function stopMedia() {
+    mediaPlayer.pause();
+    mediaPlayer.currentTime = 0;
+  }
+</script>
+</html>
