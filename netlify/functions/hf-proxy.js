@@ -1,22 +1,18 @@
-// netlify/functions/hf-proxy.js
-export default async (req, context) => {
-  const HF_TOKEN = process.env.HF_TOKEN;
-  const body = await req.text();
+export default async (req, res) => {
+  const HF_TOKEN = process.env.VITE_HF_TOKEN;
 
-  const response = await fetch("https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${HF_TOKEN}`,
-      "Content-Type": "application/json"
-    },
-    body,
-  });
-
-  const blob = await response.blob();
-
-  return new Response(blob, {
-    headers: {
-      "Content-Type": "image/png"
+  const response = await fetch(
+    "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${HF_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(req.body),
     }
-  });
+  );
+
+  const arrayBuffer = await response.arrayBuffer();
+  res.status(response.status).setHeader("Content-Type", "image/png").send(Buffer.from(arrayBuffer));
 };
