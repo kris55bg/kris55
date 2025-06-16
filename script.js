@@ -132,3 +132,21 @@ function showResult(url) {
 
   memeOutput.append(img, dl);
 }
+/* ---------- Call Netlify Function (secure proxy) ---------- */
+async function generateAIImage(prompt) {
+  const res = await fetch("/.netlify/functions/hf-proxy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt }),
+  });
+
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`Proxy error ${res.status}: ${txt}`);
+  }
+
+  const blob = await res.blob();
+  console.log("🧐 blob.type =", blob.type);      // ← add this
+  return URL.createObjectURL(blob);
+}
+
