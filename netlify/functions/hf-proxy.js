@@ -1,15 +1,12 @@
 // netlify/functions/hf-proxy.js
 export const handler = async (event) => {
-  // 1 — read the prompt from the POST body
   const { prompt = "" } = JSON.parse(event.body || "{}");
   if (!prompt) {
     return { statusCode: 400, body: "Prompt missing" };
   }
 
-  // 2 — secret token from Netlify env-vars
-  const HF_TOKEN = process.env.HF_TOKEN;          // ★ keep this key name
+  const HF_TOKEN = process.env.HF_TOKEN;
 
-  // 3 — forward to Hugging Face
   const apiRes = await fetch(
     "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
     {
@@ -27,7 +24,6 @@ export const handler = async (event) => {
     return { statusCode: apiRes.status, body: txt };
   }
 
-  // 4 — return the raw PNG (base64) to the browser
   const arrayBuf = await apiRes.arrayBuffer();
   return {
     statusCode: 200,
