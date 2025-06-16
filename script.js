@@ -61,24 +61,25 @@ async function generateAIImage(prompt) {
   }
 
   const blob = await res.blob();
+  console.log("🧐 blob.type =", blob.type);  // <-- helps debug if image is returned
   return URL.createObjectURL(blob);
 }
 
 /* ---------- Caption overlay ---------- */
 async function drawCaptionOnImage(imgURL, caption) {
-  const img    = await loadImage(imgURL);
+  const img = await loadImage(imgURL);
   const canvas = document.createElement("canvas");
-  const ctx    = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
 
-  canvas.width  = img.width;
+  canvas.width = img.width;
   canvas.height = img.height;
   ctx.drawImage(img, 0, 0);
 
-  ctx.font        = "bold 48px Impact";
-  ctx.fillStyle   = "white";
+  ctx.font = "bold 48px Impact";
+  ctx.fillStyle = "white";
   ctx.strokeStyle = "black";
-  ctx.lineWidth   = 4;
-  ctx.textAlign   = "center";
+  ctx.lineWidth = 4;
+  ctx.textAlign = "center";
 
   const lines = wrapLines(ctx, caption, canvas.width - 60);
   let y = 80;
@@ -87,15 +88,16 @@ async function drawCaptionOnImage(imgURL, caption) {
     ctx.fillText(line, canvas.width / 2, y);
     y += 56;
   }
+
   return canvas.toDataURL("image/png");
 }
 
 function loadImage(src) {
   return new Promise((res, rej) => {
     const img = new Image();
-    img.onload  = () => res(img);
+    img.onload = () => res(img);
     img.onerror = rej;
-    img.src     = src;
+    img.src = src;
   });
 }
 
@@ -109,7 +111,9 @@ function wrapLines(ctx, text, maxW) {
     if (ctx.measureText(test).width > maxW && line) {
       lines.push(line.trim());
       line = w + " ";
-    } else line = test;
+    } else {
+      line = test;
+    }
   }
   lines.push(line.trim());
   return lines;
@@ -132,21 +136,3 @@ function showResult(url) {
 
   memeOutput.append(img, dl);
 }
-/* ---------- Call Netlify Function (secure proxy) ---------- */
-async function generateAIImage(prompt) {
-  const res = await fetch("/.netlify/functions/hf-proxy", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt }),
-  });
-
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Proxy error ${res.status}: ${txt}`);
-  }
-
-  const blob = await res.blob();
-  console.log("🧐 blob.type =", blob.type);      // ← add this
-  return URL.createObjectURL(blob);
-}
-
