@@ -1,0 +1,3 @@
+[build]
+  publish   = "."                  # since you’re serving a static folder
+  functions = "netlify/functions"  # where your JS handlers live
